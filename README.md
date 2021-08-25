@@ -13,7 +13,7 @@ To run the simulation:
     noise
     
 2. Then, make sure you are inside of this repo directory, and then navigate to 'code' directory, full path is:
-    'f-2020-b351-final-project/code/'
+    'IntroToAIFinalProject/code/'
 
 3.  Once inside the folder with the code, simply run the program using: 'python3 testing_analysis.py'. 
     This is a terminal program that will ask you for inputs
