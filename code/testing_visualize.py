@@ -8,7 +8,8 @@ from testing_helpers import *
 
 
 def broad_testing(size, weight_factor, obstacles_percentage, num_runs, beam_size=1, test_beam=False, manhattan=False,
-                  euclidean=False, end_at_found=True, no_weight=False, visualize=False, preset=0):
+                  euclidean=False, end_at_found=True, no_weight=False, visualize=False, preset=0, bfs=False, dfs=False,
+                  iddfs=False, ucs=False, greedy=False, astar=False, beam=False, di=False, bi=False):
     """
     Gathers the algorithm data for scores, as well as plotting the path
     :param size: size of board
@@ -23,6 +24,15 @@ def broad_testing(size, weight_factor, obstacles_percentage, num_runs, beam_size
     :param no_weight: if true, the board has uniform weight cost
     :param visualize: if true, the paths of the algorithms will be visualized
     :param preset: if greater than 0 a preset will be used
+    :param bfs: if true, bfs is executed
+    :param dfs: if true, dfs is executed
+    :param iddfs: if true, iddfs is executed
+    :param ucs: if true, ucs is executed
+    :param greedy: if true, greedy is executed
+    :param astar: if true, a* is executed
+    :param beam: if true, beam is executed
+    :param di: if true, dijkstras is executed
+    :param bi: if true, bidirectional is executed
     :return: testing dict with algorithm information
     """
     small = False
@@ -63,42 +73,44 @@ def broad_testing(size, weight_factor, obstacles_percentage, num_runs, beam_size
         '''
         Tests BFS
         '''
-        start = time.time()
-        bfs_end, bfs_length = uninformed_search(starting_vertex, goal)
-        end = time.time()
-        bfs_cost = bfs_end.cost
-        end_dict[bfs_end] = 'BFS, cost=' + str(bfs_cost)
-        if bfs_end.current != goal:
-            print('Uninformed BFS found the wrong goal')
-            bfs_time = None
-            bfs_cost = None
-        else:
-            bfs_time = end - start
-            print('Uninformed BFS took: ' + str(bfs_time) + ' seconds, and found a path cost of ' + str(
-                bfs_cost) + ' after exploring ' + str(bfs_length) + ' nodes')
+        if bfs:
+            start = time.time()
+            bfs_end, bfs_length = uninformed_search(starting_vertex, goal)
+            end = time.time()
+            bfs_cost = bfs_end.cost
+            end_dict[bfs_end] = 'BFS, cost=' + str(bfs_cost)
+            if bfs_end.current != goal:
+                print('Uninformed BFS found the wrong goal')
+                bfs_time = None
+                bfs_cost = None
+            else:
+                bfs_time = end - start
+                print('Uninformed BFS took: ' + str(bfs_time) + ' seconds, and found a path cost of ' + str(
+                    bfs_cost) + ' after exploring ' + str(bfs_length) + ' nodes')
 
-        algorithm_performance_dict['BFS'] = bfs_time, bfs_cost, bfs_length
+            algorithm_performance_dict['BFS'] = bfs_time, bfs_cost, bfs_length
 
         '''
         Tests DFS
         '''
-        start = time.time()
-        dfs_end, dfs_length = uninformed_search(starting_vertex, goal, dfs=True)
-        end = time.time()
-        dfs_cost = dfs_end.cost
-        end_dict[dfs_end] = 'DFS, cost=' + str(dfs_cost)
-        if dfs_end.current != goal:
-            print('Uninformed DFS found the wrong goal')
-            dfs_time = None
-            dfs_cost = None
-        else:
-            dfs_time = end - start
-            print('Uninformed DFS took: ' + str(dfs_time) + ' seconds, and found a path cost of ' + str(
-                dfs_cost) + ' after exploring ' + str(dfs_length) + ' nodes')
+        if dfs:
+            start = time.time()
+            dfs_end, dfs_length = uninformed_search(starting_vertex, goal, dfs=True)
+            end = time.time()
+            dfs_cost = dfs_end.cost
+            end_dict[dfs_end] = 'DFS, cost=' + str(dfs_cost)
+            if dfs_end.current != goal:
+                print('Uninformed DFS found the wrong goal')
+                dfs_time = None
+                dfs_cost = None
+            else:
+                dfs_time = end - start
+                print('Uninformed DFS took: ' + str(dfs_time) + ' seconds, and found a path cost of ' + str(
+                    dfs_cost) + ' after exploring ' + str(dfs_length) + ' nodes')
 
-        algorithm_performance_dict['DFS'] = dfs_time, dfs_cost, dfs_length
+            algorithm_performance_dict['DFS'] = dfs_time, dfs_cost, dfs_length
 
-        if small:
+        if small and iddfs:
             start = time.time()
             iddfs_end, iddfs_depth = IDDFS(starting_vertex, goal)
             end = time.time()
@@ -118,189 +130,192 @@ def broad_testing(size, weight_factor, obstacles_percentage, num_runs, beam_size
         '''
         Tests UCS
         '''
-        start = time.time()
-        ucs_end, ucs_length = UCS(starting_vertex, goal)
-        end = time.time()
-        ucs_cost = ucs_end.cost
-        end_dict[ucs_end] = 'UCS, cost=' + str(ucs_cost)
-        if ucs_end.current != goal:
-            print('Informed UCS found the wrong goal')
-            ucs_time = None
-            ucs_cost = None
-        else:
-            ucs_time = end - start
-            print('Informed UCS took: ' + str(ucs_time) + ' seconds, and found a path cost of ' + str(
-                ucs_cost) + ' after exploring ' + str(ucs_length) + ' nodes')
+        if ucs:
+            start = time.time()
+            ucs_end, ucs_length = UCS(starting_vertex, goal)
+            end = time.time()
+            ucs_cost = ucs_end.cost
+            end_dict[ucs_end] = 'UCS, cost=' + str(ucs_cost)
+            if ucs_end.current != goal:
+                print('Informed UCS found the wrong goal')
+                ucs_time = None
+                ucs_cost = None
+            else:
+                ucs_time = end - start
+                print('Informed UCS took: ' + str(ucs_time) + ' seconds, and found a path cost of ' + str(
+                    ucs_cost) + ' after exploring ' + str(ucs_length) + ' nodes')
 
-        algorithm_performance_dict['UCS'] = ucs_time, ucs_cost, ucs_length
+            algorithm_performance_dict['UCS'] = ucs_time, ucs_cost, ucs_length
 
         '''
         Tests Greedy algorithm using specified heuristic
         '''
-        if euclidean and manhattan:
-            start = time.time()
-            greedy_end, greedy_length = greedy_search(starting_vertex, goal, manhattan=True)
-            end = time.time()
-            greedy_cost = greedy_end.cost
-            end_dict[greedy_end] = 'Greedy Manhattan, cost=' + str(greedy_cost)
-            if greedy_end.current != goal:
-                print('Informed Greedy Search using Manhattan distance found the wrong goal')
-                greedy_time = None
-                greedy_cost = None
+        if greedy:
+            if euclidean and manhattan:
+                start = time.time()
+                greedy_end, greedy_length = greedy_search(starting_vertex, goal, manhattan=True)
+                end = time.time()
+                greedy_cost = greedy_end.cost
+                end_dict[greedy_end] = 'Greedy Manhattan, cost=' + str(greedy_cost)
+                if greedy_end.current != goal:
+                    print('Informed Greedy Search using Manhattan distance found the wrong goal')
+                    greedy_time = None
+                    greedy_cost = None
+                else:
+                    greedy_time = end - start
+                    print('Informed Greedy Search using Manhattan distance took: ' + str(greedy_time) + ' seconds, and found a path cost of ' + str(
+                        greedy_cost) + ' after exploring ' + str(greedy_length) + ' nodes')
+
+                algorithm_performance_dict['Greedy Manhattan'] = greedy_time, greedy_cost, greedy_length
+
+                start = time.time()
+                greedy_end, greedy_length = greedy_search(starting_vertex, goal)
+                end = time.time()
+                greedy_cost = greedy_end.cost
+                end_dict[greedy_end] = 'Greedy Euclidean, cost=' + str(greedy_cost)
+                if greedy_end.current != goal:
+                    print('Informed Greedy Search using Euclidean distance found the wrong goal')
+                    greedy_time = None
+                    greedy_cost = None
+                else:
+                    greedy_time = end - start
+                    print('Informed Greedy Search using Euclidean distance took: ' + str(greedy_time) + ' seconds, and found a path cost of ' + str(
+                        greedy_cost) + ' after exploring ' + str(greedy_length) + ' nodes')
+
+                algorithm_performance_dict['Greedy Euclidean'] = greedy_time, greedy_cost, greedy_length
+            elif euclidean:
+                start = time.time()
+                greedy_end, greedy_length = greedy_search(starting_vertex, goal)
+                end = time.time()
+                greedy_cost = greedy_end.cost
+                end_dict[greedy_end] = 'Greedy, cost=' + str(greedy_cost)
+                if greedy_end.current != goal:
+                    print('Informed Greedy Search using found the wrong goal')
+                    greedy_time = None
+                    greedy_cost = None
+                else:
+                    greedy_time = end - start
+                    print('Informed Greedy Search using took: ' + str(greedy_time) + ' seconds, and found a path cost of ' + str(
+                        greedy_cost) + ' after exploring ' + str(greedy_length) + ' nodes')
+
+                algorithm_performance_dict['Greedy'] = greedy_time, greedy_cost, greedy_length
+            elif manhattan:
+                start = time.time()
+                greedy_end, greedy_length = greedy_search(starting_vertex, goal, manhattan=True)
+                end = time.time()
+                greedy_cost = greedy_end.cost
+                end_dict[greedy_end] = 'Greedy, cost=' + str(greedy_cost)
+                if greedy_end.current != goal:
+                    print('Informed Greedy Search using found the wrong goal')
+                    greedy_time = None
+                    greedy_cost = None
+                else:
+                    greedy_time = end - start
+                    print('Informed Greedy Search using took: ' + str(greedy_time) + ' seconds, and found a path cost of ' + str(
+                        greedy_cost) + ' after exploring ' + str(greedy_length) + ' nodes')
+
+                algorithm_performance_dict['Greedy'] = greedy_time, greedy_cost, greedy_length
             else:
-                greedy_time = end - start
-                print('Informed Greedy Search using Manhattan distance took: ' + str(greedy_time) + ' seconds, and found a path cost of ' + str(
-                    greedy_cost) + ' after exploring ' + str(greedy_length) + ' nodes')
+                start = time.time()
+                greedy_end, greedy_length = greedy_search(starting_vertex, goal)
+                end = time.time()
+                greedy_cost = greedy_end.cost
+                end_dict[greedy_end] = 'Greedy, cost=' + str(greedy_cost)
+                if greedy_end.current != goal:
+                    print('Informed Greedy Search using found the wrong goal')
+                    greedy_time = None
+                    greedy_cost = None
+                else:
+                    greedy_time = end - start
+                    print('Informed Greedy Search using took: ' + str(greedy_time) + ' seconds, and found a path cost of ' + str(
+                        greedy_cost) + ' after exploring ' + str(greedy_length) + ' nodes')
 
-            algorithm_performance_dict['Greedy Manhattan'] = greedy_time, greedy_cost, greedy_length
-
-            start = time.time()
-            greedy_end, greedy_length = greedy_search(starting_vertex, goal)
-            end = time.time()
-            greedy_cost = greedy_end.cost
-            end_dict[greedy_end] = 'Greedy Euclidean, cost=' + str(greedy_cost)
-            if greedy_end.current != goal:
-                print('Informed Greedy Search using Euclidean distance found the wrong goal')
-                greedy_time = None
-                greedy_cost = None
-            else:
-                greedy_time = end - start
-                print('Informed Greedy Search using Euclidean distance took: ' + str(greedy_time) + ' seconds, and found a path cost of ' + str(
-                    greedy_cost) + ' after exploring ' + str(greedy_length) + ' nodes')
-
-            algorithm_performance_dict['Greedy Euclidean'] = greedy_time, greedy_cost, greedy_length
-        elif euclidean:
-            start = time.time()
-            greedy_end, greedy_length = greedy_search(starting_vertex, goal)
-            end = time.time()
-            greedy_cost = greedy_end.cost
-            end_dict[greedy_end] = 'Greedy, cost=' + str(greedy_cost)
-            if greedy_end.current != goal:
-                print('Informed Greedy Search using found the wrong goal')
-                greedy_time = None
-                greedy_cost = None
-            else:
-                greedy_time = end - start
-                print('Informed Greedy Search using took: ' + str(greedy_time) + ' seconds, and found a path cost of ' + str(
-                    greedy_cost) + ' after exploring ' + str(greedy_length) + ' nodes')
-
-            algorithm_performance_dict['Greedy'] = greedy_time, greedy_cost, greedy_length
-        elif manhattan:
-            start = time.time()
-            greedy_end, greedy_length = greedy_search(starting_vertex, goal, manhattan=True)
-            end = time.time()
-            greedy_cost = greedy_end.cost
-            end_dict[greedy_end] = 'Greedy, cost=' + str(greedy_cost)
-            if greedy_end.current != goal:
-                print('Informed Greedy Search using found the wrong goal')
-                greedy_time = None
-                greedy_cost = None
-            else:
-                greedy_time = end - start
-                print('Informed Greedy Search using took: ' + str(greedy_time) + ' seconds, and found a path cost of ' + str(
-                    greedy_cost) + ' after exploring ' + str(greedy_length) + ' nodes')
-
-            algorithm_performance_dict['Greedy'] = greedy_time, greedy_cost, greedy_length
-        else:
-            start = time.time()
-            greedy_end, greedy_length = greedy_search(starting_vertex, goal)
-            end = time.time()
-            greedy_cost = greedy_end.cost
-            end_dict[greedy_end] = 'Greedy, cost=' + str(greedy_cost)
-            if greedy_end.current != goal:
-                print('Informed Greedy Search using found the wrong goal')
-                greedy_time = None
-                greedy_cost = None
-            else:
-                greedy_time = end - start
-                print('Informed Greedy Search using took: ' + str(greedy_time) + ' seconds, and found a path cost of ' + str(
-                    greedy_cost) + ' after exploring ' + str(greedy_length) + ' nodes')
-
-            algorithm_performance_dict['Greedy'] = greedy_time, greedy_cost, greedy_length
+                algorithm_performance_dict['Greedy'] = greedy_time, greedy_cost, greedy_length
 
         '''
         Tests A* algorithm using specified heuristic
         '''
-        if manhattan and euclidean:
-            start = time.time()
-            a_star_end, a_star_length = a_star(starting_vertex, goal, manhattan=True)
-            end = time.time()
-            a_star_cost = a_star_end.cost
-            end_dict[a_star_end] = 'A* Manhattan, cost=' + str(a_star_cost)
-            if a_star_end.current != goal:
-                print('Informed A* using Manhattan distance found the wrong goal')
-                a_star_time = None
-                a_star_cost = None
+        if astar:
+            if manhattan and euclidean:
+                start = time.time()
+                a_star_end, a_star_length = a_star(starting_vertex, goal, manhattan=True)
+                end = time.time()
+                a_star_cost = a_star_end.cost
+                end_dict[a_star_end] = 'A* Manhattan, cost=' + str(a_star_cost)
+                if a_star_end.current != goal:
+                    print('Informed A* using Manhattan distance found the wrong goal')
+                    a_star_time = None
+                    a_star_cost = None
+                else:
+                    a_star_time = end - start
+                    print('Informed A* using Manhattan distance took: ' + str(a_star_time) + ' seconds, and found a path cost of ' + str(
+                        a_star_cost) + ' after exploring ' + str(a_star_length) + ' nodes')
+
+                algorithm_performance_dict['A Star Manhattan'] = a_star_time, a_star_cost, a_star_length
+
+                start = time.time()
+                a_star_end, a_star_length = a_star(starting_vertex, goal)
+                end = time.time()
+                a_star_cost = a_star_end.cost
+                end_dict[a_star_end] = 'A* Euclidean, cost=' + str(a_star_cost)
+                if a_star_end.current != goal:
+                    print('Informed A* using Euclidean distance found the wrong goal')
+                    a_star_time = None
+                    a_star_cost = None
+                else:
+                    a_star_time = end - start
+                    print('Informed A* using Euclidean distance took: ' + str(a_star_time) + ' seconds, and found a path cost of ' + str(
+                        a_star_cost) + ' after exploring ' + str(a_star_length) + ' nodes')
+
+                algorithm_performance_dict['A Star Euclidean'] = a_star_time, a_star_cost, a_star_length
+            elif euclidean:
+                start = time.time()
+                a_star_end, a_star_length = a_star(starting_vertex, goal)
+                end = time.time()
+                a_star_cost = a_star_end.cost
+                end_dict[a_star_end] = 'A*, cost=' + str(a_star_cost)
+                if a_star_end.current != goal:
+                    print('Informed A* found the wrong goal')
+                    a_star_time = None
+                    a_star_cost = None
+                else:
+                    a_star_time = end - start
+                    print('Informed A* took: ' + str(a_star_time) + ' seconds, and found a path cost of ' + str(
+                        a_star_cost) + ' after exploring ' + str(a_star_length) + ' nodes')
+
+                algorithm_performance_dict['A Star'] = a_star_time, a_star_cost, a_star_length
+            elif manhattan:
+                start = time.time()
+                a_star_end, a_star_length = a_star(starting_vertex, goal, manhattan=True)
+                end = time.time()
+                a_star_cost = a_star_end.cost
+                end_dict[a_star_end] = 'A*, cost=' + str(a_star_cost)
+                if a_star_end.current != goal:
+                    print('Informed A* found the wrong goal')
+                    a_star_time = None
+                    a_star_cost = None
+                else:
+                    a_star_time = end - start
+                    print('Informed A* took: ' + str(a_star_time) + ' seconds, and found a path cost of ' + str(
+                        a_star_cost) + ' after exploring ' + str(a_star_length) + ' nodes')
+
+                algorithm_performance_dict['A Star'] = a_star_time, a_star_cost, a_star_length
             else:
-                a_star_time = end - start
-                print('Informed A* using Manhattan distance took: ' + str(a_star_time) + ' seconds, and found a path cost of ' + str(
-                    a_star_cost) + ' after exploring ' + str(a_star_length) + ' nodes')
+                start = time.time()
+                a_star_end, a_star_length = a_star(starting_vertex, goal)
+                end = time.time()
+                a_star_cost = a_star_end.cost
+                end_dict[a_star_end] = 'A*, cost=' + str(a_star_cost)
+                if a_star_end.current != goal:
+                    print('Informed A* found the wrong goal')
+                    a_star_time = None
+                    a_star_cost = None
+                else:
+                    a_star_time = end - start
+                    print('Informed A* took: ' + str(a_star_time) + ' seconds, and found a path cost of ' + str(
+                        a_star_cost) + ' after exploring ' + str(a_star_length) + ' nodes')
 
-            algorithm_performance_dict['A Star Manhattan'] = a_star_time, a_star_cost, a_star_length
-
-            start = time.time()
-            a_star_end, a_star_length = a_star(starting_vertex, goal)
-            end = time.time()
-            a_star_cost = a_star_end.cost
-            end_dict[a_star_end] = 'A* Euclidean, cost=' + str(a_star_cost)
-            if a_star_end.current != goal:
-                print('Informed A* using Euclidean distance found the wrong goal')
-                a_star_time = None
-                a_star_cost = None
-            else:
-                a_star_time = end - start
-                print('Informed A* using Euclidean distance took: ' + str(a_star_time) + ' seconds, and found a path cost of ' + str(
-                    a_star_cost) + ' after exploring ' + str(a_star_length) + ' nodes')
-
-            algorithm_performance_dict['A Star Euclidean'] = a_star_time, a_star_cost, a_star_length
-        elif euclidean:
-            start = time.time()
-            a_star_end, a_star_length = a_star(starting_vertex, goal)
-            end = time.time()
-            a_star_cost = a_star_end.cost
-            end_dict[a_star_end] = 'A*, cost=' + str(a_star_cost)
-            if a_star_end.current != goal:
-                print('Informed A* found the wrong goal')
-                a_star_time = None
-                a_star_cost = None
-            else:
-                a_star_time = end - start
-                print('Informed A* took: ' + str(a_star_time) + ' seconds, and found a path cost of ' + str(
-                    a_star_cost) + ' after exploring ' + str(a_star_length) + ' nodes')
-
-            algorithm_performance_dict['A Star'] = a_star_time, a_star_cost, a_star_length
-        elif manhattan:
-            start = time.time()
-            a_star_end, a_star_length = a_star(starting_vertex, goal, manhattan=True)
-            end = time.time()
-            a_star_cost = a_star_end.cost
-            end_dict[a_star_end] = 'A*, cost=' + str(a_star_cost)
-            if a_star_end.current != goal:
-                print('Informed A* found the wrong goal')
-                a_star_time = None
-                a_star_cost = None
-            else:
-                a_star_time = end - start
-                print('Informed A* took: ' + str(a_star_time) + ' seconds, and found a path cost of ' + str(
-                    a_star_cost) + ' after exploring ' + str(a_star_length) + ' nodes')
-
-            algorithm_performance_dict['A Star'] = a_star_time, a_star_cost, a_star_length
-        else:
-            start = time.time()
-            a_star_end, a_star_length = a_star(starting_vertex, goal)
-            end = time.time()
-            a_star_cost = a_star_end.cost
-            end_dict[a_star_end] = 'A*, cost=' + str(a_star_cost)
-            if a_star_end.current != goal:
-                print('Informed A* found the wrong goal')
-                a_star_time = None
-                a_star_cost = None
-            else:
-                a_star_time = end - start
-                print('Informed A* took: ' + str(a_star_time) + ' seconds, and found a path cost of ' + str(
-                    a_star_cost) + ' after exploring ' + str(a_star_length) + ' nodes')
-
-            algorithm_performance_dict['A Star'] = a_star_time, a_star_cost, a_star_length
+                algorithm_performance_dict['A Star'] = a_star_time, a_star_cost, a_star_length
 
         '''
         Tests IDA* algorithm using specified heuristic, doesn't work so it will never run
@@ -390,240 +405,244 @@ def broad_testing(size, weight_factor, obstacles_percentage, num_runs, beam_size
         '''
         Tests Beam algorithm
         '''
-        if test_beam:
-            for j in range(1, 5):
-                start = time.time()
-                beam_end, beam_length = beam_search(starting_vertex, goal, j)
-                end = time.time()
-                beam_cost = beam_end.cost
-                end_dict[beam_end] = 'Beam, length=' + str(j) + ', cost=' + str(beam_cost)
-                if beam_end.current != goal:
-                    print('Informed Beam Search (beam length=' + str(j) + ') found the wrong goal')
-                    beam_time = None
-                    beam_cost = None
-                else:
-                    beam_time = end - start
-                    print('Informed Beam Search (beam length=' + str(j) + ') took: ' + str(
-                        beam_time) + ' seconds, and found a path cost of ' + str(
-                        beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
-                algorithm_performance_dict['Beam=' + str(j)] = beam_time, beam_cost, beam_length
+        if beam:
+            if test_beam:
+                for j in range(1, 5):
+                    start = time.time()
+                    beam_end, beam_length = beam_search(starting_vertex, goal, j)
+                    end = time.time()
+                    beam_cost = beam_end.cost
+                    end_dict[beam_end] = 'Beam, length=' + str(j) + ', cost=' + str(beam_cost)
+                    if beam_end.current != goal:
+                        print('Informed Beam Search (beam length=' + str(j) + ') found the wrong goal')
+                        beam_time = None
+                        beam_cost = None
+                    else:
+                        beam_time = end - start
+                        print('Informed Beam Search (beam length=' + str(j) + ') took: ' + str(
+                            beam_time) + ' seconds, and found a path cost of ' + str(
+                            beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
+                    algorithm_performance_dict['Beam=' + str(j)] = beam_time, beam_cost, beam_length
 
-        else:
-            if manhattan and euclidean:
-                start = time.time()
-                beam_end, beam_length = beam_search(starting_vertex, goal, beam_size, manhattan=True)
-                end = time.time()
-                beam_cost = beam_end.cost
-                end_dict[beam_end] = 'Beam Manhattan, cost=' + str(beam_cost)
-                if beam_end.current != goal:
-                    print('Informed Beam Search using Manhattan distance found the wrong goal')
-                    beam_time = None
-                    beam_cost = None
-                else:
-                    beam_time = end - start
-                    print('Informed Beam Search using Manhattan distance (beam length=' + str(beam_size) + ') took: ' + str(
-                        beam_time) + ' seconds, and found a path cost of ' + str(
-                        beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
-
-                algorithm_performance_dict['Beam Manhattan'] = beam_time, beam_cost, beam_length
-
-                start = time.time()
-                beam_end, beam_length = beam_search(starting_vertex, goal, beam_size)
-                end = time.time()
-                beam_cost = beam_end.cost
-                end_dict[beam_end] = 'Beam Euclidean, cost=' + str(beam_cost)
-                if beam_end.current != goal:
-                    print('Informed Beam Search using Euclidean distance found the wrong goal')
-                    beam_time = None
-                    beam_cost = None
-                else:
-                    beam_time = end - start
-                    print('Informed Beam Search using Euclidean (beam length=' + str(beam_size) + ') took: ' + str(
-                        beam_time) + ' seconds, and found a path cost of ' + str(
-                        beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
-
-                algorithm_performance_dict['Beam Euclidean'] = beam_time, beam_cost, beam_length
-            elif euclidean:
-                start = time.time()
-                beam_end, beam_length = beam_search(starting_vertex, goal, beam_size)
-                end = time.time()
-                beam_cost = beam_end.cost
-                end_dict[beam_end] = 'Beam, cost=' + str(beam_cost)
-                if beam_end.current != goal:
-                    print('Informed Beam Search found the wrong goal')
-                    beam_time = None
-                    beam_cost = None
-                else:
-                    beam_time = end - start
-                    print('Informed Beam Search (beam length=' + str(beam_size) + ') took: ' + str(
-                        beam_time) + ' seconds, and found a path cost of ' + str(
-                        beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
-
-                algorithm_performance_dict['Beam'] = beam_time, beam_cost, beam_length
-            elif manhattan:
-                start = time.time()
-                beam_end, beam_length = beam_search(starting_vertex, goal, beam_size, manhattan=True)
-                end = time.time()
-                beam_cost = beam_end.cost
-                end_dict[beam_end] = 'Beam, cost=' + str(beam_cost)
-                if beam_end.current != goal:
-                    print('Informed Beam Search found the wrong goal')
-                    beam_time = None
-                    beam_cost = None
-                else:
-                    beam_time = end - start
-                    print('Informed Beam Search (beam length=' + str(beam_size) + ') took: ' + str(
-                        beam_time) + ' seconds, and found a path cost of ' + str(
-                        beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
-
-                algorithm_performance_dict['Beam'] = beam_time, beam_cost, beam_length
             else:
-                start = time.time()
-                beam_end, beam_length = beam_search(starting_vertex, goal, beam_size)
-                end = time.time()
-                beam_cost = beam_end.cost
-                end_dict[beam_end] = 'Beam, cost=' + str(beam_cost)
-                if beam_end.current != goal:
-                    print('Informed Beam Search found the wrong goal')
-                    beam_time = None
-                    beam_cost = None
-                else:
-                    beam_time = end - start
-                    print('Informed Beam Search (beam length=' + str(beam_size) + ') took: ' + str(beam_time) + ' seconds, and found a path cost of ' + str(
-                        beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
+                if manhattan and euclidean:
+                    start = time.time()
+                    beam_end, beam_length = beam_search(starting_vertex, goal, beam_size, manhattan=True)
+                    end = time.time()
+                    beam_cost = beam_end.cost
+                    end_dict[beam_end] = 'Beam Manhattan, cost=' + str(beam_cost)
+                    if beam_end.current != goal:
+                        print('Informed Beam Search using Manhattan distance found the wrong goal')
+                        beam_time = None
+                        beam_cost = None
+                    else:
+                        beam_time = end - start
+                        print('Informed Beam Search using Manhattan distance (beam length=' + str(beam_size) + ') took: ' + str(
+                            beam_time) + ' seconds, and found a path cost of ' + str(
+                            beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
 
-                algorithm_performance_dict['Beam'] = beam_time, beam_cost, beam_length
+                    algorithm_performance_dict['Beam Manhattan'] = beam_time, beam_cost, beam_length
+
+                    start = time.time()
+                    beam_end, beam_length = beam_search(starting_vertex, goal, beam_size)
+                    end = time.time()
+                    beam_cost = beam_end.cost
+                    end_dict[beam_end] = 'Beam Euclidean, cost=' + str(beam_cost)
+                    if beam_end.current != goal:
+                        print('Informed Beam Search using Euclidean distance found the wrong goal')
+                        beam_time = None
+                        beam_cost = None
+                    else:
+                        beam_time = end - start
+                        print('Informed Beam Search using Euclidean (beam length=' + str(beam_size) + ') took: ' + str(
+                            beam_time) + ' seconds, and found a path cost of ' + str(
+                            beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
+
+                    algorithm_performance_dict['Beam Euclidean'] = beam_time, beam_cost, beam_length
+                elif euclidean:
+                    start = time.time()
+                    beam_end, beam_length = beam_search(starting_vertex, goal, beam_size)
+                    end = time.time()
+                    beam_cost = beam_end.cost
+                    end_dict[beam_end] = 'Beam, cost=' + str(beam_cost)
+                    if beam_end.current != goal:
+                        print('Informed Beam Search found the wrong goal')
+                        beam_time = None
+                        beam_cost = None
+                    else:
+                        beam_time = end - start
+                        print('Informed Beam Search (beam length=' + str(beam_size) + ') took: ' + str(
+                            beam_time) + ' seconds, and found a path cost of ' + str(
+                            beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
+
+                    algorithm_performance_dict['Beam'] = beam_time, beam_cost, beam_length
+                elif manhattan:
+                    start = time.time()
+                    beam_end, beam_length = beam_search(starting_vertex, goal, beam_size, manhattan=True)
+                    end = time.time()
+                    beam_cost = beam_end.cost
+                    end_dict[beam_end] = 'Beam, cost=' + str(beam_cost)
+                    if beam_end.current != goal:
+                        print('Informed Beam Search found the wrong goal')
+                        beam_time = None
+                        beam_cost = None
+                    else:
+                        beam_time = end - start
+                        print('Informed Beam Search (beam length=' + str(beam_size) + ') took: ' + str(
+                            beam_time) + ' seconds, and found a path cost of ' + str(
+                            beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
+
+                    algorithm_performance_dict['Beam'] = beam_time, beam_cost, beam_length
+                else:
+                    start = time.time()
+                    beam_end, beam_length = beam_search(starting_vertex, goal, beam_size)
+                    end = time.time()
+                    beam_cost = beam_end.cost
+                    end_dict[beam_end] = 'Beam, cost=' + str(beam_cost)
+                    if beam_end.current != goal:
+                        print('Informed Beam Search found the wrong goal')
+                        beam_time = None
+                        beam_cost = None
+                    else:
+                        beam_time = end - start
+                        print('Informed Beam Search (beam length=' + str(beam_size) + ') took: ' + str(beam_time) + ' seconds, and found a path cost of ' + str(
+                            beam_cost) + ' after exploring ' + str(beam_length) + ' nodes')
+
+                    algorithm_performance_dict['Beam'] = beam_time, beam_cost, beam_length
 
         '''
         Tests Dijkstra's algorithm
         '''
-        start = time.time()
-        di_end, di_cost, di_prev = dijkstras(source, goal, weight_matrix)
-        end = time.time()
-        total_nodes_analyzed = 0
-        for d in di_cost:
-            if math.isfinite(di_cost[d]):
-                total_nodes_analyzed += 1
-        di_cost = di_cost[di_end]
-        end_dict[di_end, 'short'] = 'Dijkstras, cost=' + str(di_cost)
-        if di_end != goal:
-            print('Informed Dijkstras search found the wrong goal')
-            di_time = None
-            di_cost = None
-        else:
-            di_time = end - start
-            print('Informed Dijkstras search took: ' + str(di_time) + ' seconds, and found a path cost of ' + str(
-                di_cost) + ' after exploring ' + str(total_nodes_analyzed) + ' nodes')
-
-        algorithm_performance_dict['Dijkstras'] = di_time, di_cost, total_nodes_analyzed
-
-        if not end_at_found:
+        di_prev = None
+        if di:
             start = time.time()
-            di_end, di_cost, di_prev = dijkstras(source, goal, weight_matrix, end_at_found=end_at_found)
+            di_end, di_cost, di_prev = dijkstras(source, goal, weight_matrix)
             end = time.time()
             total_nodes_analyzed = 0
             for d in di_cost:
                 if math.isfinite(di_cost[d]):
                     total_nodes_analyzed += 1
             di_cost = di_cost[di_end]
-            end_dict[di_end, 'long'] = 'Dijkstras Full, cost=' + str(di_cost)
+            end_dict[di_end, 'short'] = 'Dijkstras, cost=' + str(di_cost)
             if di_end != goal:
                 print('Informed Dijkstras search found the wrong goal')
                 di_time = None
                 di_cost = None
             else:
                 di_time = end - start
-                print('Informed Dijkstras search on full graph took: ' + str(di_time) + ' seconds, and found a path cost of ' + str(
+                print('Informed Dijkstras search took: ' + str(di_time) + ' seconds, and found a path cost of ' + str(
                     di_cost) + ' after exploring ' + str(total_nodes_analyzed) + ' nodes')
-            algorithm_performance_dict['Dijkstras Full'] = di_time, di_cost, total_nodes_analyzed
+
+            algorithm_performance_dict['Dijkstras'] = di_time, di_cost, total_nodes_analyzed
+
+            if not end_at_found:
+                start = time.time()
+                di_end, di_cost, di_prev = dijkstras(source, goal, weight_matrix, end_at_found=end_at_found)
+                end = time.time()
+                total_nodes_analyzed = 0
+                for d in di_cost:
+                    if math.isfinite(di_cost[d]):
+                        total_nodes_analyzed += 1
+                di_cost = di_cost[di_end]
+                end_dict[di_end, 'long'] = 'Dijkstras Full, cost=' + str(di_cost)
+                if di_end != goal:
+                    print('Informed Dijkstras search found the wrong goal')
+                    di_time = None
+                    di_cost = None
+                else:
+                    di_time = end - start
+                    print('Informed Dijkstras search on full graph took: ' + str(di_time) + ' seconds, and found a path cost of ' + str(
+                        di_cost) + ' after exploring ' + str(total_nodes_analyzed) + ' nodes')
+                algorithm_performance_dict['Dijkstras Full'] = di_time, di_cost, total_nodes_analyzed
 
         '''
         Tests Bidirectinal algorithm with specified heuristics
         '''
-        if manhattan and euclidean:
-            start = time.time()
-            bi_end, bi_length = bidirectional_search(starting_vertex, goal_vertex, manhattan=True)
-            end = time.time()
-            bi_cost = bi_end.cost
-            end_dict[bi_end] = 'Bidirectional Manhattan, cost=' + str(bi_cost)
-            if bi_end.current != goal:
-                print('Informed Bidirectional Search using Manhattan distance found the wrong goal')
-                bi_time = None
-                bi_cost = None
+        if bi:
+            if manhattan and euclidean:
+                start = time.time()
+                bi_end, bi_length = bidirectional_search(starting_vertex, goal_vertex, manhattan=True)
+                end = time.time()
+                bi_cost = bi_end.cost
+                end_dict[bi_end] = 'Bidirectional Manhattan, cost=' + str(bi_cost)
+                if bi_end.current != goal:
+                    print('Informed Bidirectional Search using Manhattan distance found the wrong goal')
+                    bi_time = None
+                    bi_cost = None
+                else:
+                    bi_time = end - start
+                    print(
+                        'Informed Bidirectional Search using Manhattan distance took: ' + str(bi_time) + ' seconds, and found a path cost of ' + str(
+                            bi_cost) + ' after exploring ' + str(bi_length) + ' nodes')
+
+                algorithm_performance_dict['Bidirectional Manhattan'] = bi_time, bi_cost, bi_length
+
+                start = time.time()
+                bi_end, bi_length = bidirectional_search(starting_vertex, goal_vertex)
+                end = time.time()
+                bi_cost = bi_end.cost
+                end_dict[bi_end] = 'Bidirectional Euclidean, cost=' + str(bi_cost)
+                if bi_end.current != goal:
+                    print('Informed Bidirectional Search using Euclidean distance found the wrong goal')
+                    bi_time = None
+                    bi_cost = None
+                else:
+                    bi_time = end - start
+                    print(
+                        'Informed Bidirectional Search using Euclidean distance took: ' + str(bi_time) + ' seconds, and found a path cost of ' + str(
+                            bi_cost) + ' after exploring ' + str(bi_length) + ' nodes')
+
+                algorithm_performance_dict['Bidirectional Euclidean'] = bi_time, bi_cost, bi_length
+            elif euclidean:
+                start = time.time()
+                bi_end, bi_length = bidirectional_search(starting_vertex, goal_vertex)
+                end = time.time()
+                bi_cost = bi_end.cost
+                end_dict[bi_end] = 'Bidirectional, cost=' + str(bi_cost)
+                if bi_end.current != goal:
+                    print('Informed Bidirectional Search found the wrong goal')
+                    bi_time = None
+                    bi_cost = None
+                else:
+                    bi_time = end - start
+                    print(
+                        'Informed Bidirectional Search took: ' + str(bi_time) + ' seconds, and found a path cost of ' + str(
+                            bi_cost) + ' after exploring ' + str(bi_length) + ' nodes')
+
+                algorithm_performance_dict['Bidirectional'] = bi_time, bi_cost, bi_length
+            elif manhattan:
+                start = time.time()
+                bi_end, bi_length = bidirectional_search(starting_vertex, goal_vertex, manhattan=True)
+                end = time.time()
+                bi_cost = bi_end.cost
+                end_dict[bi_end] = 'Bidirectional, cost=' + str(bi_cost)
+                if bi_end.current != goal:
+                    print('Informed Bidirectional Search found the wrong goal')
+                    bi_time = None
+                    bi_cost = None
+                else:
+                    bi_time = end - start
+                    print(
+                        'Informed Bidirectional Search took: ' + str(bi_time) + ' seconds, and found a path cost of ' + str(
+                            bi_cost) + ' after exploring ' + str(bi_length) + ' nodes')
+
+                algorithm_performance_dict['Bidirectional'] = bi_time, bi_cost, bi_length
             else:
-                bi_time = end - start
-                print(
-                    'Informed Bidirectional Search using Manhattan distance took: ' + str(bi_time) + ' seconds, and found a path cost of ' + str(
+                start = time.time()
+                bi_end, bi_length = bidirectional_search(starting_vertex, goal_vertex)
+                end = time.time()
+                bi_cost = bi_end.cost
+                end_dict[bi_end] = 'Bidirectional, cost=' + str(bi_cost)
+                if bi_end.current != goal:
+                    print('Informed Bidirectional Search found the wrong goal')
+                    bi_time = None
+                    bi_cost = None
+                else:
+                    bi_time = end - start
+                    print('Informed Bidirectional Search took: ' + str(bi_time) + ' seconds, and found a path cost of ' + str(
                         bi_cost) + ' after exploring ' + str(bi_length) + ' nodes')
 
-            algorithm_performance_dict['Bidirectional Manhattan'] = bi_time, bi_cost, bi_length
-
-            start = time.time()
-            bi_end, bi_length = bidirectional_search(starting_vertex, goal_vertex)
-            end = time.time()
-            bi_cost = bi_end.cost
-            end_dict[bi_end] = 'Bidirectional Euclidean, cost=' + str(bi_cost)
-            if bi_end.current != goal:
-                print('Informed Bidirectional Search using Euclidean distance found the wrong goal')
-                bi_time = None
-                bi_cost = None
-            else:
-                bi_time = end - start
-                print(
-                    'Informed Bidirectional Search using Euclidean distance took: ' + str(bi_time) + ' seconds, and found a path cost of ' + str(
-                        bi_cost) + ' after exploring ' + str(bi_length) + ' nodes')
-
-            algorithm_performance_dict['Bidirectional Euclidean'] = bi_time, bi_cost, bi_length
-        elif euclidean:
-            start = time.time()
-            bi_end, bi_length = bidirectional_search(starting_vertex, goal_vertex)
-            end = time.time()
-            bi_cost = bi_end.cost
-            end_dict[bi_end] = 'Bidirectional, cost=' + str(bi_cost)
-            if bi_end.current != goal:
-                print('Informed Bidirectional Search found the wrong goal')
-                bi_time = None
-                bi_cost = None
-            else:
-                bi_time = end - start
-                print(
-                    'Informed Bidirectional Search took: ' + str(bi_time) + ' seconds, and found a path cost of ' + str(
-                        bi_cost) + ' after exploring ' + str(bi_length) + ' nodes')
-
-            algorithm_performance_dict['Bidirectional'] = bi_time, bi_cost, bi_length
-        elif manhattan:
-            start = time.time()
-            bi_end, bi_length = bidirectional_search(starting_vertex, goal_vertex, manhattan=True)
-            end = time.time()
-            bi_cost = bi_end.cost
-            end_dict[bi_end] = 'Bidirectional, cost=' + str(bi_cost)
-            if bi_end.current != goal:
-                print('Informed Bidirectional Search found the wrong goal')
-                bi_time = None
-                bi_cost = None
-            else:
-                bi_time = end - start
-                print(
-                    'Informed Bidirectional Search took: ' + str(bi_time) + ' seconds, and found a path cost of ' + str(
-                        bi_cost) + ' after exploring ' + str(bi_length) + ' nodes')
-
-            algorithm_performance_dict['Bidirectional'] = bi_time, bi_cost, bi_length
-        else:
-            start = time.time()
-            bi_end, bi_length = bidirectional_search(starting_vertex, goal_vertex)
-            end = time.time()
-            bi_cost = bi_end.cost
-            end_dict[bi_end] = 'Bidirectional, cost=' + str(bi_cost)
-            if bi_end.current != goal:
-                print('Informed Bidirectional Search found the wrong goal')
-                bi_time = None
-                bi_cost = None
-            else:
-                bi_time = end - start
-                print('Informed Bidirectional Search took: ' + str(bi_time) + ' seconds, and found a path cost of ' + str(
-                    bi_cost) + ' after exploring ' + str(bi_length) + ' nodes')
-
-            algorithm_performance_dict['Bidirectional'] = bi_time, bi_cost, bi_length
+                algorithm_performance_dict['Bidirectional'] = bi_time, bi_cost, bi_length
 
         testing_dict[i] = algorithm_performance_dict
 

@@ -9,8 +9,11 @@ import numpy as np
 from scipy import interpolate
 import math
 
+
 def broad_testing_analysis(size, weight_factor, obstacles_percentage, num_runs, beam_size=1, test_beam=False,
-                           manhattan=False, euclidean=False, end_at_found=True, no_weight=False, visualize=False, preset=0):
+                           manhattan=False, euclidean=False, end_at_found=True, no_weight=False, visualize=False,
+                           preset=0,  bfs=False, dfs=False, iddfs=False, ucs=False, greedy=False, astar=False,
+                           beam=False, di=False, bi=False):
     """
     Analyzes broad testing
     :param size: size of board
@@ -25,12 +28,23 @@ def broad_testing_analysis(size, weight_factor, obstacles_percentage, num_runs, 
     :param no_weight: if true, the board is a uniform weight
     :param visualize: if true, the paths are visualized
     :param preset: if true, a preset board setup is used
+    :param bfs: if true, bfs is executed
+    :param dfs: if true, dfs is executed
+    :param iddfs: if true, iddfs is executed
+    :param ucs: if true, ucs is executed
+    :param greedy: if true, greedy is executed
+    :param astar: if true, a* is executed
+    :param beam: if true, beam is executed
+    :param di: if true, dijkstras is executed
+    :param bi: if true, bidirectional is executed
     :return: none
     """
 
     testing_dict = broad_testing(size, weight_factor, obstacles_percentage, num_runs, beam_size=beam_size,
                                  test_beam=test_beam, manhattan=manhattan, euclidean=euclidean,
-                                 end_at_found=end_at_found, no_weight=no_weight, visualize=visualize, preset=preset)
+                                 end_at_found=end_at_found, no_weight=no_weight, visualize=visualize, preset=preset,
+                                 bfs=bfs, dfs=dfs, iddfs=iddfs, ucs=ucs, greedy=greedy, astar=astar, beam=beam, di=di,
+                                 bi=bi)
     attributes = testing_dict.pop('Attributes')
 
     algo_times = dict()
@@ -81,7 +95,8 @@ def broad_testing_analysis(size, weight_factor, obstacles_percentage, num_runs, 
     Displays algorithm performance
     '''
     print()
-    print('Algorithm Performance Metric (lower is better) calculated with: \n((algorithm cost - lowest cost) + number of nodes visited) * algorithm time')
+    print(
+        'Algorithm Performance Metric (lower is better) calculated with: \n((algorithm cost - lowest cost) + number of nodes visited) * algorithm time')
     print('Attributes:', 'Size: ' + str(attributes['Size']) + ', Weight Factor: ' + str(
         attributes['Weight Factor']) + ', Obstacles: ' + str(attributes['Obstacles']))
     for i in range(len(testing_dict)):
@@ -90,7 +105,8 @@ def broad_testing_analysis(size, weight_factor, obstacles_percentage, num_runs, 
             if algo_times[algo][i] is None:
                 print(algo, 'Did not finish')
             else:
-                print(algo, (((10000 * (algo_costs[algo][i] - lowest_cost)) + (10 * algo_lengths[algo][i])) * (algo_times[algo][i] * .1)) / 100)
+                print(algo, (((10000 * (algo_costs[algo][i] - lowest_cost)) + (10 * algo_lengths[algo][i])) * (
+                            algo_times[algo][i] * .1)) / 100)
         print()
 
 
@@ -137,7 +153,8 @@ def specific_testing_analysis(min_size, max_size, step_size, weight_factor, obst
         plt.figure(1)
 
         # plots time complexity
-        plt.title('Time vs. Size, Weight Factor=' + str(weight_factor) + '\nPercentage of board as obstacles=' + str(obstacles_percentage) +'%, normalization=' + str(normalization))
+        plt.title('Time vs. Size, Weight Factor=' + str(weight_factor) + '\nPercentage of board as obstacles=' + str(
+            obstacles_percentage) + '%, normalization=' + str(normalization))
         plt.ylabel('Time (s)')
         plt.xlabel('Graph Size (nxn)')
         for algo in testing_dict:
@@ -167,7 +184,8 @@ def specific_testing_analysis(min_size, max_size, step_size, weight_factor, obst
         plt.figure(2)
 
         # plots space complexity
-        plt.title('Nodes Expanded vs. Size, Weight Factor=' + str(weight_factor) + '\nPercentage of board as obstacles=' + str(
+        plt.title('Nodes Expanded vs. Size, Weight Factor=' + str(
+            weight_factor) + '\nPercentage of board as obstacles=' + str(
             obstacles_percentage) + '%, normalization=' + str(normalization))
         plt.ylabel('Nodes')
         plt.xlabel('Graph Size (nxn)')
@@ -260,13 +278,16 @@ def specific_testing_analysis(min_size, max_size, step_size, weight_factor, obst
             if algo not in performance_dict.keys():
                 performance_dict[algo] = dict()
 
-            performance_dict[algo][size] = (10000 * (averages[size][algo][2] - lowest_cost) + (10 * averages[size][algo][1]) * (averages[size][algo][0] * .1) / 100)
+            performance_dict[algo][size] = (
+                        10000 * (averages[size][algo][2] - lowest_cost) + (10 * averages[size][algo][1]) * (
+                            averages[size][algo][0] * .1) / 100)
 
     if visualize:
         plt.figure(3)
 
         # plots algorithm score
-        plt.title('Algorithm Score vs. Size\nScore=((algorithm cost-lowest cost)+number of nodes visited)*algorithm time')
+        plt.title(
+            'Algorithm Score vs. Size\nScore=((algorithm cost-lowest cost)+number of nodes visited)*algorithm time')
         plt.ylabel('Score')
         plt.xlabel('Graph Size (nxn)')
 
@@ -313,82 +334,99 @@ The arguments are (size, max weight, obstacle%, beam length, number of full runs
 The arguments for the second one are (min size, max size, step size, max weight, obstacle%, beam length, 
     number of iterations to average across, each algorithm turned on or off)
 '''
+
+
 # broad_testing_analysis(97, 13, 12, 1, manhattan=True, end_at_found=False, visualize=True, beam_size=3, test_beam=True)
 # specific_testing_analysis(10, 100, 15, 30, 10, 50, end_at_found=False, euclidean=True, manhattan=True, di=True, visualize=True, dfs=True, bfs=True, ucs=True, greedy=True, astar=True, beam=True, bi=True, test_beam=True)
 # specific_testing_analysis(40, 100, 15, 30, 10, 5, beam=True, test_beam=True, visualize=True)
 
-'''
-Handles logic for user interface for testing
-'''
-finished = False
 
-while not finished:
-    path = input('Choose which path you would like to simulate:'
-                 '\n\t1. Test every algorithm against the same board of a fixed size'
-                 '\n\t2. Test specific algorithms and see how they perform with growing sizes of boards'
-                 '\n\t3. Test a preset graph with interesting results'
-                 '\nEnter 1, 2 or 3: ')
+def fixed_size_test():
+    size = input(
+        'Enter a board size for your NxN board, below 10 is small, 10-100 is medium, 100+ is large\nEnter a number: ')
+    try:
+        size = int(size)
+        print('Your choice for size is ' + str(size))
+    except ValueError:
+        print('Not a number, using size of 100')
+        size = 100
 
-    path = int(path)
+    weight_factor = input(
+        'Enter the maximum node cost for your board, or enter 0 for a uniform cost board\nEnter a number: ')
+    try:
+        weight_factor = int(weight_factor)
+    except ValueError:
+        print('Not a number, using maximum cost of 20')
+        weight_factor = 20
+    no_weight = False
+    if weight_factor == 0:
+        no_weight = True
+        print('You chose a uniform weight board')
+    else:
+        print('Your choice for maximum cost is ' + str(weight_factor))
 
-    if path == 1:
-        size = input('Enter a board size for your NxN board, below 10 is small, 10-100 is medium, 100+ is large\nEnter a number: ')
-        try:
-            size = int(size)
-            print('Your choice for size is ' + str(size))
-        except ValueError:
-            print('Not a number, using size of 100')
-            size = 100
+    obstacle_percentage = input(
+        'Enter the percentage of obstacles on your board, 3 is a small amount, 3-10 is medium medium amount,\n10+ is a large amount, and there may be no path to the goal\nEnter a number: ')
+    try:
+        obstacle_percentage = int(obstacle_percentage)
+        print('Your choice for obstacle percentage is ' + str(obstacle_percentage))
+    except ValueError:
+        print('Not a number, using obstacle percentage of 10%')
+        obstacle_percentage = 10
 
-        weight_factor = input('Enter the maximum node cost for your board, or enter 0 for a uniform cost board\nEnter a number: ')
-        try:
-            weight_factor = int(weight_factor)
-        except ValueError:
-            print('Not a number, using maximum cost of 20')
-            weight_factor = 20
-        no_weight = False
-        if weight_factor == 0:
-            no_weight = True
-            print('You chose a uniform weight board')
-        else:
-            print('Your choice for maximum cost is ' + str(weight_factor))
+    distance = input(
+        'What type of distance calculation would you like to use:\n\t1. Euclidean Distance\n\t2. Manhattan Distance\n\t3. Both\nEnter 1, 2, or 3: ')
+    try:
+        distance = int(distance)
+    except ValueError:
+        print('Not a number, using euclidean distance')
+        distance = 1
+    euclidean = False
+    manhattan = False
+    if distance == 1:
+        euclidean = True
+        print('Euclidean distance chosen for heuristic calculation')
+    elif distance == 2:
+        manhattan = True
+        print('Manhattan distance chosen for heuristic calculation')
+    elif distance == 3:
+        euclidean = True
+        manhattan = True
+        print('Euclidean and Manhattan distance chosen for heuristic calculation')
 
-        obstacle_percentage = input('Enter the percentage of obstacles on your board, 3 is a small amount, 3-10 is medium medium amount,\n10+ is a large amount, and there may be no path to the goal\nEnter a number: ')
-        try:
-            obstacle_percentage = int(obstacle_percentage)
-            print('Your choice for obstacle percentage is ' + str(obstacle_percentage))
-        except ValueError:
-            print('Not a number, using obstacle percentage of 10%')
-            obstacle_percentage = 10
-
-        distance = input('What type of distance calculation would you like to use:\n\t1. Euclidean Distance\n\t2. Manhattan Distance\n\t3. Both\nEnter 1, 2, or 3: ')
-        try:
-            distance = int(distance)
-        except ValueError:
-            print('Not a number, using euclidean distance')
-            distance = 1
-        euclidean = False
-        manhattan = False
-        if distance == 1:
-            euclidean = True
-            print('Euclidean distance chosen for heuristic calculation')
-        elif distance == 2:
-            manhattan = True
-            print('Manhattan distance chosen for heuristic calculation')
-        elif distance == 3:
-            euclidean = True
-            manhattan = True
-            print('Euclidean and Manhattan distance chosen for heuristic calculation')
-
-        di_choice = input('Would you like Dijkstras algorithm to terminate when a goal is found?\nEnter \'y\' for yes or \'n\' for no: ')
-        end_at_found = True
-        if di_choice == 'n':
-            end_at_found = False
-            print('Dijkstras algorithm will search the whole board')
-        else:
-            print('Dijkstras algorithm will only search until the goal is found')
-
-        beam_choice = input('What beam length would you like to use? Enter a number 1 - 4 for a length, or 0 to test all lengths\nEnter a number: ')
+    print(
+        'Now select the algorithms you would like to test\nYou will be presented with an algorithm, enter \'y\' to include algorithm in test or \'n\' to exlude algorithm')
+    bfs_choice = input('BFS: ')
+    bfs = False
+    if bfs_choice == 'y':
+        bfs = True
+    dfs_choice = input('DFS: ')
+    dfs = False
+    if dfs_choice == 'y':
+        dfs = True
+    iddfs = False
+    if size < 10:
+        iddfs_choice = input('IDDFS: ')
+        if iddfs_choice == 'y':
+            iddfs = True
+    ucs_choice = input('UCS: ')
+    ucs = False
+    if ucs_choice == 'y':
+        ucs = True
+    greedy_choice = input('Greedy: ')
+    greedy = False
+    if greedy_choice == 'y':
+        greedy = True
+    a_star_choice = input('A*: ')
+    astar = False
+    if a_star_choice == 'y':
+        astar = True
+    beam_choice = input('Beam: ')
+    beam = False
+    test_beam = False
+    if beam_choice == 'y':
+        beam_choice = input(
+            'What beam length would you like to use? Enter a number 1 - 4 for a length, or 0 to test all lengths\nEnter a number: ')
         try:
             beam_choice = int(beam_choice)
         except ValueError:
@@ -397,178 +435,234 @@ while not finished:
         test_beam = False
         if beam_choice == 0:
             test_beam = True
-            print('All beam lengths will be tested')
-        else:
-            print('Your choice for beam length is ' + str(beam_choice))
+        beam = True
+    di_choice = input('Dijkstra: ')
+    di = False
+    end_at_found = True
+    if di_choice == 'y':
+        di_choice = input(
+            'Would you like Djikstras algorithm to terminate when a goal is found?\nEnter \'y\' or \'n\': ')
+        if di_choice == 'n':
+            end_at_found = False
+        di = True
+    bi_choice = input('Bidirectional: ')
+    bi = False
+    if bi_choice == 'y':
+        bi = True
 
-        v_choice = input('Would you like to visualize the algorithm paths?\nEnter \'y\' for yes or \'n\' for no: ')
-        visualize = True
-        if v_choice == 'n':
-            visualize = False
-            print('You chose to not visualize the paths')
-        else:
-            print('You chose to visualize the path')
-
-        broad_testing_analysis(size, weight_factor, obstacle_percentage, 1, manhattan=manhattan, euclidean=euclidean,
-                               end_at_found=end_at_found, no_weight=no_weight, test_beam=test_beam, visualize=visualize,
-                               beam_size=beam_choice)
-    elif path == 2:
-        min_size = input('Enter a minimum board size for your trials, 5 or 10 are recommended starting sizes\nEnter a number: ')
-        try:
-            min_size = int(min_size)
-            print('Your choice for size is ' + str(min_size))
-        except ValueError:
-            print('Not a number, using min size of 10')
-            min_size = 10
-
-        max_size = input('Enter a max board size for trials, 75, 100, 150, and 200 are recommended ending sizes\nEnter a number: ')
-        try:
-            max_size = int(max_size)
-            print('Your choice for size is ' + str(max_size))
-        except ValueError:
-            print('Not a number, using max size of 100')
-            max_size = 100
-
-        step_size = input('Enter a step size for incrementing the board size, 1, 2, 5, 10, 15 are good choices\nThe smaller the step, the more accurate the function will be\nEnter a number: ')
-        try:
-            step_size = int(step_size)
-            print('Your choice for step size is ' + str(step_size))
-        except ValueError:
-            print('Not a number, using step size of 2')
-            step_size = 2
-
-        weight_factor = input('Enter the maximum node cost for your board, or enter 0 for a uniform cost board\nEnter a number: ')
-        try:
-            weight_factor = int(weight_factor)
-        except ValueError:
-            print('Not a number, using maximum cost of 20')
-            weight_factor = 20
-        no_weight = False
-        if weight_factor == 0:
-            no_weight = True
-            print('You chose a uniform weight board')
-        else:
-            print('Your choice for maximum cost is ' + str(weight_factor))
-
-        obstacle_percentage = input('Enter the percentage of obstacles on your board, 3 is a small anount, 3-10 is medium medium amount,\n10+ is a large amount, and there may be no path to the goal\nEnter a number: ')
-        try:
-            obstacle_percentage = int(obstacle_percentage)
-            print('Your choice for obstacle percentage is ' + str(obstacle_percentage))
-        except ValueError:
-            print('Not a number, using obstacle percentage of 10%')
-            obstacle_percentage = 10
-
-        normalization = input('Choose the number of trials you would like to complete to average over, 5, 10, 20, 50 are solid benchmarks, \nThe higher the number, the more accurate the function at the end\nEnter a number: ')
-        try:
-            normalization = int(normalization)
-            print('Your choice the number of trials is ' + str(normalization))
-        except ValueError:
-            print('Not a number, using 50 trials')
-            normalization = 50
-
-        distance = input('What type of distance calculation would you like to use:\n\t1. Euclidean Distance\n\t2. Manhattan Distance\n\t3. Both\nEnter 1, 2, or 3: ')
-        try:
-            distance = int(distance)
-        except ValueError:
-            print('Not a number, using euclidean distance')
-            distance = 1
-        euclidean = False
-        manhattan = False
-        if distance == 1:
-            euclidean = True
-            print('Euclidean distance chosen for heuristic calculation')
-        elif distance == 2:
-            manhattan = True
-            print('Manhattan distance chosen for heuristic calculation')
-        elif distance == 3:
-            euclidean = True
-            manhattan = True
-            print('Euclidean and Manhattan distance chosen for heuristic calculation')
-
-
-        print('Now select the algorithms you would like to test\nYou will be presented with an algorithm, enter \'y\' to include algorithm in test or \'n\' to exlude algorithm')
-        bfs_choice = input('BFS: ')
-        bfs = False
-        if bfs_choice == 'y':
-            bfs = True
-        dfs_choice = input('DFS: ')
-        dfs = False
-        if dfs_choice == 'y':
-            dfs = True
-        iddfs = False
-        if min_size < 10:
-            iddfs_choice = input('IDDFS: ')
-            if iddfs_choice == 'y':
-                iddfs = True
-        ucs_choice = input('UCS: ')
-        ucs = False
-        if ucs_choice == 'y':
-            ucs = True
-        greedy_choice = input('Greedy: ')
-        greedy = False
-        if greedy_choice == 'y':
-            greedy = True
-        a_star_choice = input('A*: ')
-        astar = False
-        if a_star_choice == 'y':
-            astar = True
-        beam_choice = input('Beam: ')
-        beam = False
-        test_beam = False
-        if beam_choice == 'y':
-            beam_choice = input(
-                'What beam length would you like to use? Enter a number 1 - 4 for a length, or 0 to test all lengths\nEnter a number: ')
-            try:
-                beam_choice = int(beam_choice)
-            except ValueError:
-                print('Not a number, using beam length of 3')
-                beam_choice = 3
-            test_beam = False
-            if beam_choice == 0:
-                test_beam = True
-            beam = True
-        di_choice = input('Dijkstra: ')
-        di = False
-        end_at_found = True
-        if di_choice == 'y':
-            di_choice = input(
-                'Would you like Djikstras algorithm to terminate when a goal is found?\nEnter \'y\' or \'n\': ')
-            if di_choice == 'n':
-                end_at_found = False
-            di = True
-        bi_choice = input('Bidirectional: ')
-        bi = False
-        if bi_choice == 'y':
-            bi = True
-
-        v_choice = input('Would you like to visualize performance at the end?\nEnter \'y\' or \'n\': ')
-        visualize = True
-        if v_choice == 'n':
-            visualize = False
-            print('You chose to not visualize the paths')
-        else:
-            print('You chose to visualize the path')
-
-        specific_testing_analysis(min_size, max_size, step_size, weight_factor, obstacle_percentage, normalization, no_weight=no_weight, end_at_found=end_at_found, euclidean=euclidean, manhattan=manhattan,
-                                  visualize=visualize, beam_size=beam_choice, test_beam=test_beam, bfs=bfs, dfs=dfs, iddfs=iddfs, ucs=ucs, greedy=greedy, astar=astar, beam=beam, di=di, bi=bi)
-    elif path == 3:
-        preset = input('Choose a preset option: '
-                       '\n\t1. Bottom Left to Top Right'
-                       '\nEnter a number: ')
-        try:
-            preset = int(preset)
-        except ValueError:
-            print('Not a number, preset 1 chosen')
-            preset = 1
-        if preset == 1:
-            print('Testing Bottom left to top right path')
-            broad_testing_analysis(100, 20, 7, 1, manhattan=True, euclidean=True, end_at_found=False, test_beam=True,
-                               visualize=True, beam_size=3, preset=preset)
-        else:
-            print('Invalid option')
+    v_choice = input('Would you like to visualize performance at the end?\nEnter \'y\' or \'n\': ')
+    visualize = True
+    if v_choice == 'n':
+        visualize = False
+        print('You chose to not visualize the paths')
     else:
-        print('Invalid selection')
+        print('You chose to visualize the path')
 
-    choice = input('Enter c to continue, otherwise enter q to quit: ')
-    if choice == 'q':
-        finished = True
+    broad_testing_analysis(size, weight_factor, obstacle_percentage, 1, manhattan=manhattan, euclidean=euclidean,
+                           end_at_found=end_at_found, no_weight=no_weight, test_beam=test_beam, visualize=visualize,
+                           beam_size=beam_choice, bfs=bfs, dfs=dfs, iddfs=iddfs, ucs=ucs, greedy=greedy, astar=astar,
+                           beam=beam, di=di, bi=bi)
+
+
+def growing_size_test():
+    min_size = input(
+        'Enter a minimum board size for your trials, 5 or 10 are recommended starting sizes\nEnter a number: ')
+    try:
+        min_size = int(min_size)
+        print('Your choice for size is ' + str(min_size))
+    except ValueError:
+        print('Not a number, using min size of 10')
+        min_size = 10
+
+    max_size = input(
+        'Enter a max board size for trials, 75, 100, 150, and 200 are recommended ending sizes\nEnter a number: ')
+    try:
+        max_size = int(max_size)
+        print('Your choice for size is ' + str(max_size))
+    except ValueError:
+        print('Not a number, using max size of 100')
+        max_size = 100
+
+    step_size = input(
+        'Enter a step size for incrementing the board size, 1, 2, 5, 10, 15 are good choices\nThe smaller the step, the more accurate the function will be\nEnter a number: ')
+    try:
+        step_size = int(step_size)
+        print('Your choice for step size is ' + str(step_size))
+    except ValueError:
+        print('Not a number, using step size of 2')
+        step_size = 2
+
+    weight_factor = input(
+        'Enter the maximum node cost for your board, or enter 0 for a uniform cost board\nEnter a number: ')
+    try:
+        weight_factor = int(weight_factor)
+    except ValueError:
+        print('Not a number, using maximum cost of 20')
+        weight_factor = 20
+    no_weight = False
+    if weight_factor == 0:
+        no_weight = True
+        print('You chose a uniform weight board')
+    else:
+        print('Your choice for maximum cost is ' + str(weight_factor))
+
+    obstacle_percentage = input(
+        'Enter the percentage of obstacles on your board, 3 is a small anount, 3-10 is medium medium amount,\n10+ is a large amount, and there may be no path to the goal\nEnter a number: ')
+    try:
+        obstacle_percentage = int(obstacle_percentage)
+        print('Your choice for obstacle percentage is ' + str(obstacle_percentage))
+    except ValueError:
+        print('Not a number, using obstacle percentage of 10%')
+        obstacle_percentage = 10
+
+    normalization = input(
+        'Choose the number of trials you would like to complete to average over, 5, 10, 20, 50 are solid benchmarks, \nThe higher the number, the more accurate the function at the end\nEnter a number: ')
+    try:
+        normalization = int(normalization)
+        print('Your choice the number of trials is ' + str(normalization))
+    except ValueError:
+        print('Not a number, using 50 trials')
+        normalization = 50
+
+    distance = input(
+        'What type of distance calculation would you like to use:\n\t1. Euclidean Distance\n\t2. Manhattan Distance\n\t3. Both\nEnter 1, 2, or 3: ')
+    try:
+        distance = int(distance)
+    except ValueError:
+        print('Not a number, using euclidean distance')
+        distance = 1
+    euclidean = False
+    manhattan = False
+    if distance == 1:
+        euclidean = True
+        print('Euclidean distance chosen for heuristic calculation')
+    elif distance == 2:
+        manhattan = True
+        print('Manhattan distance chosen for heuristic calculation')
+    elif distance == 3:
+        euclidean = True
+        manhattan = True
+        print('Euclidean and Manhattan distance chosen for heuristic calculation')
+
+    print(
+        'Now select the algorithms you would like to test\nYou will be presented with an algorithm, enter \'y\' to include algorithm in test or \'n\' to exlude algorithm')
+    bfs_choice = input('BFS: ')
+    bfs = False
+    if bfs_choice == 'y':
+        bfs = True
+    dfs_choice = input('DFS: ')
+    dfs = False
+    if dfs_choice == 'y':
+        dfs = True
+    iddfs = False
+    if min_size < 10:
+        iddfs_choice = input('IDDFS: ')
+        if iddfs_choice == 'y':
+            iddfs = True
+    ucs_choice = input('UCS: ')
+    ucs = False
+    if ucs_choice == 'y':
+        ucs = True
+    greedy_choice = input('Greedy: ')
+    greedy = False
+    if greedy_choice == 'y':
+        greedy = True
+    a_star_choice = input('A*: ')
+    astar = False
+    if a_star_choice == 'y':
+        astar = True
+    beam_choice = input('Beam: ')
+    beam = False
+    test_beam = False
+    if beam_choice == 'y':
+        beam_choice = input(
+            'What beam length would you like to use? Enter a number 1 - 4 for a length, or 0 to test all lengths\nEnter a number: ')
+        try:
+            beam_choice = int(beam_choice)
+        except ValueError:
+            print('Not a number, using beam length of 3')
+            beam_choice = 3
+        test_beam = False
+        if beam_choice == 0:
+            test_beam = True
+        beam = True
+    di_choice = input('Dijkstra: ')
+    di = False
+    end_at_found = True
+    if di_choice == 'y':
+        di_choice = input(
+            'Would you like Djikstras algorithm to terminate when a goal is found?\nEnter \'y\' or \'n\': ')
+        if di_choice == 'n':
+            end_at_found = False
+        di = True
+    bi_choice = input('Bidirectional: ')
+    bi = False
+    if bi_choice == 'y':
+        bi = True
+
+    v_choice = input('Would you like to visualize performance at the end?\nEnter \'y\' or \'n\': ')
+    visualize = True
+    if v_choice == 'n':
+        visualize = False
+        print('You chose to not visualize the paths')
+    else:
+        print('You chose to visualize the path')
+
+    specific_testing_analysis(min_size, max_size, step_size, weight_factor, obstacle_percentage, normalization,
+                              no_weight=no_weight, end_at_found=end_at_found, euclidean=euclidean,
+                              manhattan=manhattan,
+                              visualize=visualize, beam_size=beam_choice, test_beam=test_beam, bfs=bfs, dfs=dfs,
+                              iddfs=iddfs, ucs=ucs, greedy=greedy, astar=astar, beam=beam, di=di, bi=bi)
+
+
+def user_interface():
+    '''
+    Handles logic for user interface for testing
+    '''
+    finished = False
+
+    while not finished:
+        path = input('Choose which path you would like to simulate:'
+                     '\n\t1. Test any or all algorithms against the same board of a fixed size'
+                     '\n\t2. Test specific algorithms and see how they perform with growing sizes of boards'
+                     # '\n\t3. Test a preset graph with interesting results'
+                     # '\nEnter 1, 2 or 3: ')
+                     '\nEnter 1 or 2: ')
+
+
+        path = int(path)
+
+        if path == 1:
+            fixed_size_test()
+        elif path == 2:
+            growing_size_test()
+        # elif path == 3:
+        #     preset = input('Choose a preset option: '
+        #                    '\n\t1. Bottom Left to Top Right'
+        #                    '\nEnter a number: ')
+        #     try:
+        #         preset = int(preset)
+        #     except ValueError:
+        #         print('Not a number, preset 1 chosen')
+        #         preset = 1
+        #     if preset == 1:
+        #         print('Testing Bottom left to top right path')
+        #         broad_testing_analysis(100, 20, 7, 1, manhattan=True, euclidean=True, end_at_found=False,
+        #                                test_beam=True,
+        #                                visualize=True, beam_size=3, preset=preset)
+        #     else:
+        #         print('Invalid option')
+        else:
+            print('Invalid selection')
+
+        choice = input('Enter c to continue, otherwise enter q to quit: ')
+        if choice == 'q':
+            finished = True
+
+
+def main():
+    user_interface()
+
+
+if __name__ == '__main__':
+    main()
