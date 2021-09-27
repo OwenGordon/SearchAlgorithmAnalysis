@@ -1,4 +1,4 @@
-# IntroToAIFinalProject
+# An analysis of Pathfinding/Search Algorithms
 
 To run the simulation:
 1. We used Python3, the other dependencies that must be installed can be installed using '(sudo) pip3 install <module_name>', these are:
